@@ -1,8 +1,8 @@
 [project]
-folders = ["Videos", "Images", "Audio", "Project", "Export", "Export/Thumb"] # List of folders to create (Separating an folder by '/' creates an sub-folder)
-video-projects-folder = ["~", "Documents", "Evolução", "Videos"] # Default Projects Folder ('~' --> user folder)
-file-name = "video_project.toml" # Video project file name
+folders = ["Videos", "Images", "Audio", "Project", "Export", "Export/Thumb", "Export/Video", "Images/Slides"] # List of folders to create (Separating an folder by '/' creates an sub-folder)
+video-projects-folder = ["~","Documentos","Evolução","Videos"] # Default Projects Folder ('~' --> user folder)
+file-name = "project.toml" # Video project file name
 
 [default.path]
-video-path = ["Export", "video.mp4"] # Video file to upload
-thumb-path = ["Export", "Thumb", "thumb.png"] # Thumbnail to upload
+video-path = ["Export", "Video"] # Video file to upload
+thumb-path = ["Export", "Thumb"] # Thumbnail to upload

@@ -7,6 +7,8 @@ import sys
 
 settings: dict[str, Any] = None
 
+CURRENT_PROJECT_FILE_VERSION = "1.0.0"
+
 SAVE_PATH: str = "save"
 
 SETTINGS_FILE_NAME: str = "settings.toml"

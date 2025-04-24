@@ -2,19 +2,31 @@ import click
 from pathlib import Path
 import os
 import sys
-import datetime
-from .save import settings
+from datetime import datetime
+from .save import settings, CURRENT_PROJECT_FILE_VERSION
 
-TOML_TEMPLATE = """version = "{version}" # Project file version (Not the cli version)
+TOML_TEMPLATE = """# YTManager Project
+
+version = "{version}" # Project file version (Not the cli version)
 id = "{id}" # Must be the same as the folder name
 
 [metadata]
-date-of-creation = "{date}"
-last-update = "{date}"
+date-of-creation = {date}
+last-update = {date}
+video-uploaded = false
+
+[video]
+title = "'{id}' title" # Must be <= 100 Characters
+description = "'{id}' description" # Must be <= 4900 Characters
+web-site = "('{id}' Link here)"
+pre-description = "" # Text before description (ignored if empty) / Must be <= 45 Characters
+pos-description = "" # Text after description (ignored if empty) / Must be <= 45 Characters
 
 [path]
 video-path = {video_path}
 thumb-path = {thumb_path}
+
+# Made by IsaqueS
 """
 
 @click.command(help="Create video project(s). (To do multiple, separate by ',')")
@@ -23,6 +35,7 @@ def create(projects) -> None:
 
 	video_default_path: str = str(settings["default"]["path"]["video-path"])
 	thumb_default_path: str = str(settings["default"]["path"]["thumb-path"])
+	project_file_name: str = settings["project"]["file-name"]
 
 	project_path: Path = Path()
 
@@ -77,17 +90,19 @@ def create(projects) -> None:
 		if ignore_project:
 			continue
 
-		date: str = "{date:%Y-%m-%d %H:%M:%S}".format(date=datetime.datetime.now())
+		date: datetime = datetime.now()
 
 		project_toml_str = TOML_TEMPLATE.format(
-			date = date,
+			date = date.isoformat(),
 			id = project,
-			version = "1.0.0",
+			version = CURRENT_PROJECT_FILE_VERSION,
 			video_path = video_default_path,
 			thumb_path = thumb_default_path,
 		)
 
-		print(project_toml_str)
+
+		with open(current_project_path / project_file_name, "wt") as file:
+			file.write(project_toml_str)
 		
 
 
