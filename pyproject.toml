@@ -1,14 +1,15 @@
 [project]
 name = "ytmanager"
-version = "0.1.0"
-description = "Manages video projects and upload then automatically"
+version = "1.0.0"
+description = "Manages video projects"
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [
     {name = "Isaque Sebold de Almeida",email = "isaquesalmeida@outlook.com"}
 ]
 dependencies = [
-	"click (>=8.1.8,<9.0.0)"
+	"click (>=8.1.8,<9.0.0)",
+    "tomli-w"
 ]
 
 [build-system]

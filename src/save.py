@@ -28,6 +28,6 @@ def load_settings() -> None:
 	else:
 		click.secho(f"Settings file not found from: '{file_path}'", fg="red", bold=True)
 
-	click.secho(f"Settings loaded from: '{file_path}'", bold=True, fg="green")
+	# click.secho(f"Settings loaded from: '{file_path}'", bold=True, fg="green")
 
 load_settings()
