@@ -33,7 +33,7 @@ def done(projects, all) -> None:
                 project_file["metadata"]["video-uploaded"] = True
                 project_file["metadata"]["last-update"] = datetime.datetime.now()
 
-                new_project_file = tomli_w.dumps(project_file)
+                new_project_file = tomli_w.dumps(project_file, multiline_strings=True)
 
                 file = open(project_file_path, "wt")
                 file.write(new_project_file)
