@@ -19,7 +19,7 @@ def status(path) -> None:
                 try:
                     project_file:  dict[str, Any] = tomllib.load(file)
                     if project_file["id"] != project:
-                        project_with_errors.append((project_file_path, "ID is not the same as the directory name"))
+                        project_with_errors.append((project_file_path, f"ID ({project_file["id"]}) is not the same as the directory name ({project})"))
                     else:
                         projects.append(project_file)
                 except tomllib.TOMLDecodeError as e:
@@ -37,6 +37,6 @@ def status(path) -> None:
     for project in projects:
         if not project["metadata"]["video-uploaded"]:
             if path:
-                click.echo(project["id"])
-            else:
                 click.echo(str(projects_path / project["id"]))
+            else:
+                click.echo(project["id"])
