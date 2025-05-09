@@ -6,3 +6,6 @@ file-name = "project.toml" # Video project file name
 [default.path]
 video-path = ["Export", "Video"] # Video file to upload
 thumb-path = ["Export", "Thumb"] # Thumbnail to upload
+
+[default.description]
+pre-link="💻 Saiba mais: "

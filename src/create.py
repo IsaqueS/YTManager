@@ -17,8 +17,9 @@ video-uploaded = false
 
 [video]
 title = "'{id}' title" # Must be <= 100 Characters
-description = "'{id}' description" # Must be <= 4900 Characters
+description = \"\"\"'{id}' description\"\"\" # Must be <= 4900 Characters
 web-site = "('{id}' Link here)"
+pre-web-site = "{pre_link}"
 pre-description = "" # Text before description (ignored if empty) / Must be <= 45 Characters
 pos-description = "" # Text after description (ignored if empty) / Must be <= 45 Characters
 
@@ -98,11 +99,14 @@ def create(projects) -> None:
 			version = CURRENT_PROJECT_FILE_VERSION,
 			video_path = video_default_path,
 			thumb_path = thumb_default_path,
+			pre_link = settings["default"]["description"].get("pre-link", "")
 		)
 
 
 		with open(current_project_path / project_file_name, "wt") as file:
 			file.write(project_toml_str)
+		
+		click.secho(f"Project path: {current_project_path}", fg="magenta", bold=True)
 		
 
 
