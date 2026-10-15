@@ -2,11 +2,18 @@ import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kirigami.layouts as KirigamiLayouts
 
 Kirigami.ScrollablePage {
     id: pageRoot
 
     title: "YouTube Video Projects"
+
+    KirigamiLayouts.ColumnView.fillWidth: (typeof appWindow !== "undefined" && appWindow.pageStack) ? (appWindow.pageStack.depth <= 1) : false
+    KirigamiLayouts.ColumnView.interactiveResizeEnabled: true
+    KirigamiLayouts.ColumnView.minimumWidth: Kirigami.Units.gridUnit * 18
+    KirigamiLayouts.ColumnView.maximumWidth: (typeof appWindow !== "undefined") ? (appWindow.width - Kirigami.Units.gridUnit * 18) : (Kirigami.Units.gridUnit * 60)
+    KirigamiLayouts.ColumnView.preferredWidth: (typeof appWindow !== "undefined") ? Math.round(appWindow.width * 0.5) : (Kirigami.Units.gridUnit * 25)
 
     property string searchQuery: ""
     property string statusFilter: "all" // "all", "in_progress", "uploaded"

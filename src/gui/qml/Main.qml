@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kirigami.layouts as KirigamiLayouts
 
 Kirigami.ApplicationWindow {
     id: appWindow
@@ -37,6 +38,12 @@ Kirigami.ApplicationWindow {
         function onNotification(message, isError) {
             appWindow.showPassiveNotification(message, 3000);
         }
+    }
+
+    Binding {
+        target: appWindow.pageStack.columnView
+        property: "columnResizeMode"
+        value: appWindow.pageStack.wideMode ? KirigamiLayouts.ColumnView.DynamicColumns : KirigamiLayouts.ColumnView.SingleColumn
     }
 
     pageStack.initialPage: ProjectsPage {

@@ -2,14 +2,20 @@ import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kirigami.layouts as KirigamiLayouts
 import org.kde.kirigamiaddons.formcard as FormCard
 
 Kirigami.ScrollablePage {
     id: editorRoot
 
-    property var project: (backend && backend.activeProject) ? backend.activeProject : ({})
-
     title: (project && project.id) ? ("Edit Project: " + project.id) : "Edit Project"
+
+    KirigamiLayouts.ColumnView.fillWidth: true
+    KirigamiLayouts.ColumnView.interactiveResizeEnabled: true
+    KirigamiLayouts.ColumnView.minimumWidth: Kirigami.Units.gridUnit * 18
+    KirigamiLayouts.ColumnView.maximumWidth: (typeof appWindow !== "undefined") ? (appWindow.width - Kirigami.Units.gridUnit * 18) : (Kirigami.Units.gridUnit * 60)
+
+    property var project: (backend && backend.activeProject) ? backend.activeProject : ({})
 
     // Form model properties bound to active project
     property string editTitle: project ? (project.title || "") : ""
