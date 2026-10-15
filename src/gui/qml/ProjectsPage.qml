@@ -146,6 +146,19 @@ Kirigami.ScrollablePage {
 
             Controls.ComboBox {
                 id: statusCombo
+
+                FontMetrics {
+                    id: statusFontMetrics
+                    font: statusCombo.font
+                }
+
+                implicitWidth: Math.max(
+                    Kirigami.Units.gridUnit * 11,
+                    statusFontMetrics.advanceWidth("In Progress (" + (backend ? backend.inProgressCount : 0) + ")") + Kirigami.Units.gridUnit * 4
+                )
+                Layout.preferredWidth: implicitWidth
+                popup.width: Math.max(statusCombo.width, Kirigami.Units.gridUnit * 11)
+
                 model: [
                     { text: "All (" + (backend ? backend.totalCount : 0) + ")", value: "all" },
                     { text: "In Progress (" + (backend ? backend.inProgressCount : 0) + ")", value: "in_progress" },
@@ -177,6 +190,10 @@ Kirigami.ScrollablePage {
 
             Controls.ComboBox {
                 id: sortCombo
+                implicitWidth: Kirigami.Units.gridUnit * 9
+                Layout.preferredWidth: implicitWidth
+                popup.width: Math.max(sortCombo.width, Kirigami.Units.gridUnit * 9)
+
                 model: [
                     { text: "Last Updated", value: "last_update" },
                     { text: "Creation Date", value: "creation_date" },
@@ -224,7 +241,8 @@ Kirigami.ScrollablePage {
             ProjectCard {
                 projectData: modelData
                 Layout.fillWidth: true
-                Layout.alignment: Qt.AlignTop
+                Layout.preferredWidth: 0
+                Layout.fillHeight: true
                 onOpenEditorRequested: function(projId) {
                     pageRoot.openEditorRequested(projId);
                 }

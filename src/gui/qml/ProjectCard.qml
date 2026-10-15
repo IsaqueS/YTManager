@@ -10,7 +10,19 @@ Kirigami.AbstractCard {
     signal openEditorRequested(string projectId)
 
     Layout.fillWidth: true
+    Layout.fillHeight: true
     showClickFeedback: true
+
+    FontMetrics {
+        id: titleFontMetrics
+        font.pointSize: Kirigami.Theme.defaultFont.pointSize
+        font.weight: Font.DemiBold
+    }
+
+    FontMetrics {
+        id: smallFontMetrics
+        font: Kirigami.Theme.smallFont
+    }
 
     onClicked: {
         if (projectData && projectData.id) {
@@ -159,7 +171,7 @@ Kirigami.AbstractCard {
     contentItem: ColumnLayout {
         spacing: Kirigami.Units.smallSpacing
 
-        // Video Title
+        // Video Title - locked to 2 lines for uniform Y height
         Kirigami.Heading {
             text: (projectData && projectData.title && projectData.title.trim().length > 0)
                   ? projectData.title
@@ -168,19 +180,30 @@ Kirigami.AbstractCard {
             wrapMode: Text.Wrap
             maximumLineCount: 2
             elide: Text.ElideRight
+            verticalAlignment: Text.AlignTop
             Layout.fillWidth: true
+            Layout.preferredWidth: 0
+            Layout.preferredHeight: Math.ceil(titleFontMetrics.lineSpacing * 2)
+            Layout.minimumHeight: Layout.preferredHeight
+            Layout.maximumHeight: Layout.preferredHeight
         }
 
-        // Subtitle / Date info
+        // Subtitle / Date info - consistent 1-line height
         RowLayout {
+            id: dateRow
             spacing: Kirigami.Units.smallSpacing
             Layout.fillWidth: true
+            Layout.preferredWidth: 0
+            Layout.preferredHeight: Math.ceil(smallFontMetrics.lineSpacing)
+            Layout.minimumHeight: Layout.preferredHeight
+            Layout.maximumHeight: Layout.preferredHeight
 
             Kirigami.Icon {
                 source: "view-calendar"
                 implicitWidth: 13
                 implicitHeight: 13
                 opacity: 0.6
+                Layout.alignment: Qt.AlignVCenter
             }
 
             Controls.Label {
@@ -188,12 +211,16 @@ Kirigami.AbstractCard {
                 font: Kirigami.Theme.smallFont
                 color: Kirigami.Theme.disabledTextColor
                 elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
+                Layout.preferredWidth: 0
+                Layout.alignment: Qt.AlignVCenter
             }
         }
 
-        // Excerpt or Website
+        // Excerpt or Website - consistent 1-line height
         Controls.Label {
+            id: excerptLabel
             text: {
                 if (!projectData) return ""
                 if (projectData.webSite && projectData.webSite.length > 0) return projectData.webSite
@@ -204,7 +231,18 @@ Kirigami.AbstractCard {
             opacity: 0.75
             elide: Text.ElideRight
             maximumLineCount: 1
+            verticalAlignment: Text.AlignVCenter
             Layout.fillWidth: true
+            Layout.preferredWidth: 0
+            Layout.preferredHeight: Math.ceil(smallFontMetrics.lineSpacing)
+            Layout.minimumHeight: Layout.preferredHeight
+            Layout.maximumHeight: Layout.preferredHeight
+        }
+
+        // Flexible spacer to absorb any extra layout height and keep footer pinned to bottom
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
         }
     }
 
