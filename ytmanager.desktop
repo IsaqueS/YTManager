@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=YTManager
+Comment=Manage YouTube Video Projects
+Exec=/home/isaques/Code/Projetos/Python/YTManager/.venv/bin/python /home/isaques/Code/Projetos/Python/YTManager/ytmanager.py gui
+Path=/home/isaques/Code/Projetos/Python/YTManager
+Icon=folder-videos
+Terminal=false
+Type=Application
+Categories=AudioVideo;Video;KDE;Qt;
+Keywords=youtube;video;projects;manager;kirigami;
+StartupNotify=true
