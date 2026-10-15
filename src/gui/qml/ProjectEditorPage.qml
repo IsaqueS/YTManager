@@ -105,9 +105,7 @@ Kirigami.ScrollablePage {
                 if (project) {
                     var formatted = "";
                     if (editTitle.trim().length > 0) formatted += editTitle.trim() + "\n\n";
-                    if (editPreDesc.trim().length > 0) formatted += editPreDesc.trim() + "\n\n";
                     if (editDesc.trim().length > 0) formatted += editDesc.trim() + "\n\n";
-                    if (editPosDesc.trim().length > 0) formatted += editPosDesc.trim() + "\n\n";
                     if (editWebSite.trim().length > 0) {
                         var link = (editPreWebSite ? editPreWebSite : "") + editWebSite.trim();
                         formatted += link;
@@ -237,35 +235,68 @@ Kirigami.ScrollablePage {
 
             FormCard.FormDelegateSeparator {}
 
-            FormCard.FormTextFieldDelegate {
-                id: preDescInput
-                label: "Pre-Description (optional)"
-                text: editorRoot.editPreDesc
-                maximumLength: 45
-                placeholderText: "Text placed before main description (max 45 chars)"
-                onTextChanged: editorRoot.editPreDesc = text
-            }
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.leftMargin: Kirigami.Units.largeSpacing
+                Layout.rightMargin: Kirigami.Units.largeSpacing
+                Layout.topMargin: Kirigami.Units.smallSpacing
+                Layout.bottomMargin: Kirigami.Units.largeSpacing
+                spacing: Kirigami.Units.smallSpacing
 
-            FormCard.FormDelegateSeparator {}
+                RowLayout {
+                    Layout.fillWidth: true
 
-            FormCard.FormTextAreaDelegate {
-                id: descInput
-                label: "Main Description"
-                text: editorRoot.editDesc
-                maximumLength: 4900
-                placeholderText: "Write the full video description here (max 4900 chars)"
-                onTextChanged: editorRoot.editDesc = text
-            }
+                    Controls.Label {
+                        text: "Description"
+                        font.bold: true
+                        Layout.fillWidth: true
+                    }
 
-            FormCard.FormDelegateSeparator {}
+                    Controls.Label {
+                        text: descArea.text.length + " / 4900"
+                        font: Kirigami.Theme.smallFont
+                        color: descArea.text.length > 4900 ? Kirigami.Theme.negativeTextColor : Kirigami.Theme.disabledTextColor
+                    }
+                }
 
-            FormCard.FormTextFieldDelegate {
-                id: posDescInput
-                label: "Post-Description (optional)"
-                text: editorRoot.editPosDesc
-                maximumLength: 45
-                placeholderText: "Text placed after main description (max 45 chars)"
-                onTextChanged: editorRoot.editPosDesc = text
+                Controls.ScrollView {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 10
+                    Layout.minimumHeight: Kirigami.Units.gridUnit * 6
+                    clip: true
+
+                    Controls.TextArea {
+                        id: descArea
+                        text: editorRoot.editDesc
+                        placeholderText: "Write the full video description here (max 4900 chars)..."
+                        wrapMode: TextEdit.Wrap
+                        selectByMouse: true
+                        font: Kirigami.Theme.defaultFont
+                        onTextChanged: {
+                            if (editorRoot.editDesc !== text) {
+                                editorRoot.editDesc = text;
+                            }
+                        }
+
+                        background: Rectangle {
+                            color: Kirigami.Theme.alternateBackgroundColor
+                            radius: Kirigami.Units.cornerRadius
+                            border.width: descArea.activeFocus ? 2 : 1
+                            border.color: descArea.activeFocus
+                                ? Kirigami.Theme.focusColor
+                                : Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.25)
+                        }
+                    }
+                }
+
+                Connections {
+                    target: editorRoot
+                    function onEditDescChanged() {
+                        if (descArea.text !== editorRoot.editDesc) {
+                            descArea.text = editorRoot.editDesc;
+                        }
+                    }
+                }
             }
         }
 
