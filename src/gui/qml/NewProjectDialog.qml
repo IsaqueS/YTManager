@@ -2,20 +2,32 @@ import QtQuick
 import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
+import org.kde.kirigami.primitives as Primitives
 import org.kde.kirigami.dialogs as KirigamiDialogs
 
 KirigamiDialogs.Dialog {
     id: dialogRoot
 
     title: "Create New Video Project"
-    preferredWidth: Kirigami.Units.gridUnit * 26
+    preferredWidth: Kirigami.Units.gridUnit * 22
 
     signal projectCreated(string projectId)
 
+    background: Primitives.ShadowedRectangle {
+        Kirigami.Theme.colorSet: Kirigami.Theme.View
+        Kirigami.Theme.inherit: false
+        color: Kirigami.Theme.backgroundColor
+        radius: Kirigami.Units.cornerRadius
+        shadow.size: Kirigami.Units.gridUnit * 1.5
+        shadow.color: Qt.rgba(0, 0, 0, 0.7)
+        shadow.yOffset: 4
+
+        border.width: 1
+        border.color: Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.35)
+    }
+
     function resetForm() {
         idField.text = "";
-        titleField.text = "";
-        linkField.text = "";
         errorMsg.visible = false;
         errorMsg.text = "";
     }
@@ -59,36 +71,11 @@ KirigamiDialogs.Dialog {
                 Layout.fillWidth: true
                 placeholderText: "e.g. 8036 or MyNewVideo"
                 onTextChanged: errorMsg.visible = false
-            }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            Controls.Label {
-                text: "Initial Video Title: (optional)"
-            }
-
-            Controls.TextField {
-                id: titleField
-                Layout.fillWidth: true
-                placeholderText: "e.g. Casa 3 Quartos - Bairro Nobre"
-            }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: Kirigami.Units.smallSpacing
-
-            Controls.Label {
-                text: "Website Link: (optional)"
-            }
-
-            Controls.TextField {
-                id: linkField
-                Layout.fillWidth: true
-                placeholderText: "https://example.com/property/8036"
+                onAccepted: {
+                    if (createBtn.enabled) {
+                        createBtn.clicked();
+                    }
+                }
             }
         }
 
@@ -109,6 +96,7 @@ KirigamiDialogs.Dialog {
             }
 
             Controls.Button {
+                id: createBtn
                 text: "Create Project"
                 icon.name: "list-add"
                 highlighted: true
@@ -120,7 +108,7 @@ KirigamiDialogs.Dialog {
                         errorMsg.visible = true;
                         return;
                     }
-                    var success = backend.createProject(pId, titleField.text.trim(), linkField.text.trim());
+                    var success = backend.createProject(pId, pId, "");
                     if (success) {
                         dialogRoot.close();
                         dialogRoot.projectCreated(pId);

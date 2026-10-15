@@ -385,11 +385,15 @@ class ProjectBackend(QObject):
             return False
 
     @Slot(str, str, str, result=bool)
-    def createProject(self, project_id: str, title: str, web_site: str) -> bool:
+    @Slot(str, result=bool)
+    def createProject(self, project_id: str, title: str = "", web_site: str = "") -> bool:
         project_id = project_id.strip()
         if not project_id:
             self.notification.emit("Project ID cannot be empty!", True)
             return False
+
+        if not title:
+            title = project_id
 
         success, msg = create_project_directory(project_id, title=title.strip(), web_site=web_site.strip())
         if not success:

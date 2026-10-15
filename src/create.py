@@ -66,7 +66,7 @@ def create_project_directory(project: str, title: str = "", web_site: str = "") 
 
 	date: datetime = datetime.now()
 
-	resolved_title = f'"{title}"' if title else f'\"\'{project}\' title\"'
+	resolved_title = f"\"{title}\"" if title else f"\"{project}\""
 	resolved_desc = f"'{project}' description"
 	resolved_website = web_site if web_site else f"('{project}' Link here)"
 
