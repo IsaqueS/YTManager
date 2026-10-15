@@ -1,0 +1,1 @@
+python -m nuitka --onefile --lto=yes --nofollow-imports --remove-output --plugin-enable=... your_script.py
