@@ -17,6 +17,15 @@ Kirigami.ScrollablePage {
     signal openSettingsRequested()
     signal openEditorRequested(string projectId)
 
+    onStatusFilterChanged: {
+        if (typeof statusCombo !== "undefined" && statusCombo) {
+            var idx = statusCombo.indexOfValue(statusFilter);
+            if (idx >= 0 && statusCombo.currentIndex !== idx) {
+                statusCombo.currentIndex = idx;
+            }
+        }
+    }
+
     function updateFilteredList() {
         if (!backend) return;
         var list = backend.projects || [];
@@ -128,39 +137,32 @@ Kirigami.ScrollablePage {
             Layout.bottomMargin: Kirigami.Units.smallSpacing
             spacing: Kirigami.Units.smallSpacing
 
-            // Filter Buttons: All, In Progress, Uploaded
-            Controls.ButtonGroup { id: filterGroup }
-
-            Controls.Button {
-                text: "All (" + (backend ? backend.totalCount : 0) + ")"
-                checkable: true
-                checked: pageRoot.statusFilter === "all"
-                Controls.ButtonGroup.group: filterGroup
-                onClicked: {
-                    pageRoot.statusFilter = "all";
-                    pageRoot.updateFilteredList();
-                }
+            // Status Filter Dropdown
+            Controls.Label {
+                text: "Status:"
+                font: Kirigami.Theme.smallFont
+                opacity: 0.7
             }
 
-            Controls.Button {
-                text: "In Progress (" + (backend ? backend.inProgressCount : 0) + ")"
-                checkable: true
-                checked: pageRoot.statusFilter === "in_progress"
-                Controls.ButtonGroup.group: filterGroup
-                onClicked: {
-                    pageRoot.statusFilter = "in_progress";
+            Controls.ComboBox {
+                id: statusCombo
+                model: [
+                    { text: "All (" + (backend ? backend.totalCount : 0) + ")", value: "all" },
+                    { text: "In Progress (" + (backend ? backend.inProgressCount : 0) + ")", value: "in_progress" },
+                    { text: "Uploaded (" + (backend ? backend.uploadedCount : 0) + ")", value: "uploaded" }
+                ]
+                textRole: "text"
+                valueRole: "value"
+                currentIndex: 0
+                onActivated: {
+                    pageRoot.statusFilter = currentValue;
                     pageRoot.updateFilteredList();
                 }
-            }
-
-            Controls.Button {
-                text: "Uploaded (" + (backend ? backend.uploadedCount : 0) + ")"
-                checkable: true
-                checked: pageRoot.statusFilter === "uploaded"
-                Controls.ButtonGroup.group: filterGroup
-                onClicked: {
-                    pageRoot.statusFilter = "uploaded";
-                    pageRoot.updateFilteredList();
+                onModelChanged: {
+                    var idx = indexOfValue(pageRoot.statusFilter);
+                    if (idx >= 0) {
+                        currentIndex = idx;
+                    }
                 }
             }
 
