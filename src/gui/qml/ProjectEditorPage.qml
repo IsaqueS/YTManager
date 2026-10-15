@@ -7,7 +7,7 @@ import org.kde.kirigamiaddons.formcard as FormCard
 Kirigami.ScrollablePage {
     id: editorRoot
 
-    property var project: backend.activeProject || ({})
+    property var project: (backend && backend.activeProject) ? backend.activeProject : ({})
 
     title: (project && project.id) ? ("Edit Project: " + project.id) : "Edit Project"
 
@@ -23,7 +23,7 @@ Kirigami.ScrollablePage {
     property string editThumbPath: project ? (project.thumbPath || "Export/Thumb") : "Export/Thumb"
 
     function syncFromProject() {
-        if (!backend.activeProject) return;
+        if (!backend || !backend.activeProject) return;
         var p = backend.activeProject;
         editTitle = p.title || "";
         editUploaded = p.videoUploaded || false;
@@ -127,6 +127,51 @@ Kirigami.ScrollablePage {
             text: "Project saved successfully to project.toml!"
             visible: false
             showCloseButton: true
+        }
+
+        // --- 16:9 Thumbnail Preview ---
+        FormCard.FormHeader {
+            title: "Thumbnail Preview (16:9)"
+        }
+
+        FormCard.FormCard {
+            Layout.fillWidth: true
+
+            Item {
+                Layout.fillWidth: true
+                implicitHeight: Math.round(width * 9.0 / 16.0)
+                clip: true
+
+                Rectangle {
+                    anchors.fill: parent
+                    color: Kirigami.Theme.alternateBackgroundColor
+                    radius: 4
+
+                    Image {
+                        id: editorThumbImg
+                        anchors.fill: parent
+                        source: (project && project.thumbnailUrl) ? project.thumbnailUrl : ""
+                        sourceSize.width: 1280
+                        sourceSize.height: 720
+                        fillMode: Image.PreserveAspectCrop
+                        visible: status === Image.Ready
+                        asynchronous: true
+                    }
+
+                    Item {
+                        anchors.fill: parent
+                        visible: editorThumbImg.status !== Image.Ready
+
+                        Kirigami.Icon {
+                            anchors.centerIn: parent
+                            width: 64
+                            height: 64
+                            source: "video-x-generic"
+                            opacity: 0.4
+                        }
+                    }
+                }
+            }
         }
 
         // --- SECTION 1: Status & Project Overview ---
@@ -311,7 +356,7 @@ Kirigami.ScrollablePage {
                         implicitHeight: previewText.implicitHeight + Kirigami.Units.largeSpacing * 2
                         radius: 6
                         color: Kirigami.Theme.alternateBackgroundColor
-                        border.color: Kirigami.Theme.separatorColor
+                        border.color: Kirigami.ColorUtils.linearInterpolation(Kirigami.Theme.backgroundColor, Kirigami.Theme.textColor, 0.2)
                         border.width: 1
 
                         Controls.TextArea {

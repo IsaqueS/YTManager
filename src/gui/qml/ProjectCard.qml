@@ -18,19 +18,22 @@ Kirigami.AbstractCard {
         }
     }
 
+    // 16:9 Aspect Ratio Preview Header
     header: Rectangle {
         id: bannerBox
-        height: 160
+        Layout.fillWidth: true
+        implicitHeight: Math.round((width > 0 ? width : (cardRoot.width > 0 ? cardRoot.width : 320)) * 9.0 / 16.0)
+        height: implicitHeight
         color: Kirigami.Theme.alternateBackgroundColor
         clip: true
 
-        // Thumbnail Image with downscaled sourceSize for high performance
+        // Thumbnail Image in 16:9 aspect ratio
         Image {
             id: thumbImg
             anchors.fill: parent
             source: (projectData && projectData.thumbnailUrl) ? projectData.thumbnailUrl : ""
-            sourceSize.width: 480
-            sourceSize.height: 270
+            sourceSize.width: 640
+            sourceSize.height: 360
             fillMode: Image.PreserveAspectCrop
             visible: status === Image.Ready
             asynchronous: true
@@ -47,8 +50,8 @@ Kirigami.AbstractCard {
 
                 Kirigami.Icon {
                     anchors.centerIn: parent
-                    width: 56
-                    height: 56
+                    width: 48
+                    height: 48
                     source: "video-x-generic"
                     opacity: 0.5
                 }
@@ -60,7 +63,7 @@ Kirigami.AbstractCard {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 48
+            height: 44
             gradient: Gradient {
                 GradientStop { position: 0.0; color: Qt.rgba(0, 0, 0, 0.45) }
                 GradientStop { position: 1.0; color: "transparent" }
@@ -77,7 +80,7 @@ Kirigami.AbstractCard {
 
             // Project ID Chip
             Rectangle {
-                implicitWidth: idText.implicitWidth + Kirigami.Units.largeSpacing
+                implicitWidth: idText.implicitWidth + Kirigami.Units.smallSpacing * 2
                 implicitHeight: idText.implicitHeight + Kirigami.Units.smallSpacing
                 radius: 4
                 color: Qt.rgba(0, 0, 0, 0.7)
@@ -105,11 +108,11 @@ Kirigami.AbstractCard {
                 RowLayout {
                     id: exportRow
                     anchors.centerIn: parent
-                    spacing: 4
+                    spacing: 3
                     Kirigami.Icon {
                         source: "media-playback-start"
-                        implicitWidth: 12
-                        implicitHeight: 12
+                        implicitWidth: 11
+                        implicitHeight: 11
                         color: "white"
                     }
                     Controls.Label {
@@ -125,7 +128,7 @@ Kirigami.AbstractCard {
                 id: statusBadge
                 readonly property bool isUploaded: Boolean(cardRoot.projectData && cardRoot.projectData.videoUploaded)
 
-                implicitWidth: statusRow.implicitWidth + Kirigami.Units.largeSpacing
+                implicitWidth: statusRow.implicitWidth + Kirigami.Units.smallSpacing * 2
                 implicitHeight: idText.implicitHeight + Kirigami.Units.smallSpacing
                 radius: 4
                 color: statusBadge.isUploaded ? Qt.rgba(0.12, 0.6, 0.25, 0.9) : Qt.rgba(0.85, 0.45, 0.05, 0.9)
@@ -133,12 +136,12 @@ Kirigami.AbstractCard {
                 RowLayout {
                     id: statusRow
                     anchors.centerIn: parent
-                    spacing: 4
+                    spacing: 3
 
                     Kirigami.Icon {
                         source: statusBadge.isUploaded ? "checkmark" : "chronometer"
-                        implicitWidth: 14
-                        implicitHeight: 14
+                        implicitWidth: 12
+                        implicitHeight: 12
                         color: "white"
                     }
 
@@ -161,7 +164,7 @@ Kirigami.AbstractCard {
             text: (projectData && projectData.title && projectData.title.trim().length > 0)
                   ? projectData.title
                   : (projectData ? "Project " + projectData.id : "")
-            level: 3
+            level: 4
             wrapMode: Text.Wrap
             maximumLineCount: 2
             elide: Text.ElideRight
@@ -175,8 +178,8 @@ Kirigami.AbstractCard {
 
             Kirigami.Icon {
                 source: "view-calendar"
-                implicitWidth: 14
-                implicitHeight: 14
+                implicitWidth: 13
+                implicitHeight: 13
                 opacity: 0.6
             }
 

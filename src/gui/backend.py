@@ -5,6 +5,7 @@ import tomli_w
 from pathlib import Path
 from datetime import datetime, date
 from typing import Any
+from concurrent.futures import ThreadPoolExecutor
 
 from PySide6.QtCore import QObject, Signal, Slot, Property, QUrl
 from PySide6.QtGui import QGuiApplication, QDesktopServices
@@ -18,8 +19,7 @@ from ..save import (
     CURRENT_PROJECT_FILE_VERSION,
 )
 from ..create import create_project_directory
-
-MAX_THUMBNAIL_BYTES = 15 * 1024 * 1024  # 15 MB limit to avoid huge print rendering files
+from .thumbnails import process_project_thumbnail, get_newest_exported_video
 
 
 def format_dt(dt: Any) -> tuple[str, str]:
@@ -164,6 +164,10 @@ class ProjectBackend(QObject):
             self.projectsChanged.emit()
             return
 
+        # Prepare items and thumbnail processing tasks
+        thumb_tasks: list[tuple[Path, dict[str, Any], Path]] = []
+        parsed_items: list[dict[str, Any]] = []
+
         for entry in entries:
             p_dir = projects_path / entry
             if not p_dir.is_dir():
@@ -195,6 +199,7 @@ class ProjectBackend(QObject):
                     "fullPath": str(p_dir),
                     "tomlPath": str(toml_file),
                     "formattedText": "",
+                    "hasVideoExport": False,
                     "hasError": True,
                     "errorMessage": str(e),
                 })
@@ -204,87 +209,21 @@ class ProjectBackend(QObject):
             video = data.get("video", {})
             paths = data.get("path", {})
 
-            # Dates
             created_iso, created_fmt = format_dt(meta.get("date-of-creation"))
             update_iso, update_fmt = format_dt(meta.get("last-update"))
 
-            # Paths
             vpath_raw = paths.get("video-path", ["Export", "Video"])
             tpath_raw = paths.get("thumb-path", ["Export", "Thumb"])
 
             vpath_str = "/".join(vpath_raw) if isinstance(vpath_raw, list) else str(vpath_raw)
             tpath_str = "/".join(tpath_raw) if isinstance(tpath_raw, list) else str(tpath_raw)
 
-            # Resolve thumbnail file
-            thumb_url = ""
-            thumb_folder = p_dir
-            if isinstance(tpath_raw, list):
-                for seg in tpath_raw:
-                    thumb_folder = thumb_folder / seg
-            else:
-                thumb_folder = thumb_folder / str(tpath_raw)
-
-            if thumb_folder.exists() and thumb_folder.is_dir():
-                try:
-                    thumb_files = os.listdir(thumb_folder)
-                    preferred = ["thumb.png", "Thumb.png", "thumb.jpg", "Thumb.jpg", "thumb.jpeg", "thumbnail.png"]
-                    chosen = None
-                    for pref in preferred:
-                        if pref in thumb_files:
-                            cand = thumb_folder / pref
-                            if cand.stat().st_size <= MAX_THUMBNAIL_BYTES:
-                                chosen = cand
-                                break
-                    if not chosen:
-                        for fn in thumb_files:
-                            if fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-                                cand = thumb_folder / fn
-                                if cand.stat().st_size <= MAX_THUMBNAIL_BYTES:
-                                    chosen = cand
-                                    break
-                    if chosen:
-                        thumb_url = QUrl.fromLocalFile(str(chosen)).toString()
-                except Exception:
-                    pass
-
-            # Fallback search if still not found
-            if not thumb_url:
-                for fallback_dir_name in ["Export", "Images"]:
-                    fb = p_dir / fallback_dir_name
-                    if fb.exists() and fb.is_dir():
-                        try:
-                            for root, _, files in os.walk(fb):
-                                for fn in files:
-                                    if fn.lower().endswith((".png", ".jpg", ".jpeg", ".webp")):
-                                        cand = Path(root) / fn
-                                        if cand.stat().st_size <= MAX_THUMBNAIL_BYTES:
-                                            thumb_url = QUrl.fromLocalFile(str(cand)).toString()
-                                            break
-                                if thumb_url:
-                                    break
-                        except Exception:
-                            pass
-                    if thumb_url:
-                        break
-
-            # Check if video export exists
-            has_video_export = False
-            video_folder = p_dir
-            if isinstance(vpath_raw, list):
-                for seg in vpath_raw:
-                    video_folder = video_folder / seg
-            if video_folder.exists() and video_folder.is_dir():
-                try:
-                    for vf in os.listdir(video_folder):
-                        if vf.lower().endswith((".mp4", ".mov", ".mkv", ".avi")):
-                            has_video_export = True
-                            break
-                except Exception:
-                    pass
+            newest_exported = get_newest_exported_video(p_dir, vpath_raw)
+            has_video_export = newest_exported is not None
 
             formatted_text = build_formatted_youtube_text(data, default_pre_link)
 
-            project_item = {
+            item = {
                 "id": str(data.get("id", entry)),
                 "title": str(video.get("title", "")),
                 "description": str(video.get("description", "")),
@@ -298,7 +237,7 @@ class ProjectBackend(QObject):
                 "formattedDate": update_fmt or created_fmt,
                 "videoPath": vpath_str,
                 "thumbPath": tpath_str,
-                "thumbnailUrl": thumb_url,
+                "thumbnailUrl": "",
                 "fullPath": str(p_dir),
                 "tomlPath": str(toml_file),
                 "formattedText": formatted_text,
@@ -306,7 +245,23 @@ class ProjectBackend(QObject):
                 "hasError": False,
                 "errorMessage": "",
             }
-            projects.append(project_item)
+            parsed_items.append(item)
+            thumb_tasks.append((p_dir, data, toml_file))
+
+        # Process thumbnails concurrently
+        if thumb_tasks:
+            try:
+                with ThreadPoolExecutor(max_workers=6) as executor:
+                    thumb_urls = list(executor.map(
+                        lambda task: process_project_thumbnail(task[0], task[1], task[2]),
+                        thumb_tasks
+                    ))
+                for item, url in zip(parsed_items, thumb_urls):
+                    item["thumbnailUrl"] = url
+            except Exception as e:
+                print(f"Error processing thumbnails: {e}")
+
+        projects.extend(parsed_items)
 
         def sort_key(p: dict[str, Any]):
             return p.get("lastUpdate", "") or ""
@@ -396,6 +351,9 @@ class ProjectBackend(QObject):
             if "path" not in data:
                 data["path"] = {}
 
+            # Preserve existing cache section
+            existing_cache = data.get("cache")
+
             data["video"]["title"] = title
             data["video"]["description"] = description
             data["video"]["pre-description"] = pre_desc
@@ -411,6 +369,9 @@ class ProjectBackend(QObject):
 
             data["path"]["video-path"] = v_segments or ["Export", "Video"]
             data["path"]["thumb-path"] = t_segments or ["Export", "Thumb"]
+
+            if existing_cache is not None:
+                data["cache"] = existing_cache
 
             with open(toml_path, "wt") as f:
                 f.write(tomli_w.dumps(data, multiline_strings=True))

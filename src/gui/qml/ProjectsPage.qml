@@ -199,10 +199,20 @@ Kirigami.ScrollablePage {
         }
     }
 
-    // Projects Grid Content
-    Kirigami.CardsLayout {
-        id: cardsLayout
+    // Projects Grid Content: Dynamically scales tiles on X axis with 320px minimum size (reduced by half)
+    GridLayout {
+        id: gridLayout
         Layout.fillWidth: true
+        width: pageRoot.width - (pageRoot.leftPadding + pageRoot.rightPadding)
+
+        // Reduced by half: 320px width (180px height in 16:9)
+        readonly property real minTileWidth: 320
+        readonly property real availWidth: Math.max(minTileWidth, width)
+
+        // Number of tiles on X axis automatically scales with window width (e.g. 4-5 on 1080p, 6-7 on 1440p)
+        columns: Math.max(1, Math.floor((availWidth + columnSpacing) / (minTileWidth + columnSpacing)))
+        columnSpacing: Kirigami.Units.largeSpacing
+        rowSpacing: Kirigami.Units.largeSpacing
 
         visible: pageRoot.filteredProjects.length > 0
 
@@ -211,6 +221,8 @@ Kirigami.ScrollablePage {
 
             ProjectCard {
                 projectData: modelData
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignTop
                 onOpenEditorRequested: function(projId) {
                     pageRoot.openEditorRequested(projId);
                 }
